@@ -4,37 +4,33 @@ import { useState } from "react";
     TẠO ĐƯỜNG DẪN ẢNH LÁ BÀI
 ============================= */
 function getCardImage(card) {
-  const suitMap = {
-    "♣": "C",
-    "♦": "D",
-    "♥": "H",
-    "♠": "S"
-  };
+  const suitMap = { "♣": "C", "♦": "D", "♥": "H", "♠": "S" };
+  const folderMap = { C: "clubs", D: "diamonds", H: "hearts", S: "spades" };
 
-  const folderMap = {
-    "C": "clubs",
-    "D": "diamonds",
-    "H": "hearts",
-    "S": "spades"
-  };
+  const value = card.value;
+  const suit = suitMap[card.suit];
+  const folder = folderMap[suit];
 
-  const value = card.value;   // A, 2–10, J, Q, K
-  const suitLetter = suitMap[card.suit]; // C / D / H / S
-  const folder = folderMap[suitLetter];
-
-  return `/cards/${folder}/${value}${suitLetter}.png`;
+  return `/cards/${folder}/${value}${suit}.png`;
 }
 
-/* Component hiển thị lá bài */
+/* Hiển thị lá bài */
 function Card({ card, hidden }) {
   if (hidden) {
     return <img className="card-img" src="/cards/back.png" alt="Hidden" />;
   }
-  return <img className="card-img" src={getCardImage(card)} alt={card.value + card.suit} />;
+
+  return (
+    <img
+      className="card-img"
+      src={getCardImage(card)}
+      alt={card.value + card.suit}
+    />
+  );
 }
 
 /* =============================
-         BỘ BÀI & TÍNH ĐIỂM
+       TẠO BỘ BÀI & TÍNH ĐIỂM
 ============================= */
 function createDeck() {
   const suits = ["♠", "♥", "♦", "♣"];
@@ -47,7 +43,7 @@ function createDeck() {
 function shuffle(deck) {
   let d = [...deck];
   for (let i = d.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.random() * (i + 1) | 0;
     [d[i], d[j]] = [d[j], d[i]];
   }
   return d;
@@ -72,7 +68,7 @@ function calcScore(hand) {
 }
 
 /* =============================
-         GAME LOGIC
+            GAME UI
 ============================= */
 export default function Game({ gameContract }) {
   const [deck, setDeck] = useState([]);
@@ -81,17 +77,21 @@ export default function Game({ gameContract }) {
   const [msg, setMsg] = useState("Nhấn Deal để bắt đầu!");
   const [end, setEnd] = useState(false);
 
+  /* ===== DEAL ===== */
   const deal = () => {
     const d = shuffle(createDeck());
     setPlayer([d.pop(), d.pop()]);
     setDealer([d.pop(), d.pop()]);
     setDeck(d);
-    setMsg("Đang chơi...");
+
+    setMsg("ĐANG CHƠI...");
     setEnd(false);
   };
 
+  /* ===== HIT ===== */
   const hit = () => {
     if (end) return;
+
     const d = [...deck];
     const p = [...player, d.pop()];
 
@@ -99,11 +99,12 @@ export default function Game({ gameContract }) {
     setPlayer(p);
 
     if (calcScore(p) > 21) {
-      setMsg("Bạn bust! Thua.");
-      finish("lose", calcScore(p), calcScore(dealer));
+      setMsg("BẠN BUST! THUA.");
+      finish("LOSE", calcScore(p), calcScore(dealer));
     }
   };
 
+  /* ===== STAND ===== */
   const stand = () => {
     if (end) return;
 
@@ -117,20 +118,23 @@ export default function Game({ gameContract }) {
     const dScore = calcScore(dl);
 
     const result =
-      pScore > dScore || dScore > 21 ? "win" :
-      pScore < dScore ? "lose" : "draw";
+      pScore > dScore || dScore > 21 ? "WIN" :
+      pScore < dScore ? "LOSE" : "DRAW";
 
     setMsg(
-      result === "win" ? "Bạn thắng!" :
-      result === "lose" ? "Bạn thua!" : "Hòa!"
+      result === "WIN" ? "BẠN THẮNG!" :
+      result === "LOSE" ? "BẠN THUA!" :
+      "HÒA!"
     );
 
     finish(result, pScore, dScore);
   };
 
+  /* ===== GHI ONCHAIN ===== */
   const finish = async (result, pScore, dScore) => {
     setEnd(true);
-    const enumRes = result === "win" ? 2 : result === "draw" ? 1 : 0;
+
+    const enumRes = result === "WIN" ? 2 : result === "DRAW" ? 1 : 0;
 
     try {
       const tx = await gameContract.recordResult(pScore, dScore, enumRes);
@@ -140,20 +144,13 @@ export default function Game({ gameContract }) {
     }
   };
 
+  /* ==============================
+            UI GIAO DIỆN
+  ============================== */
   return (
     <div className="game-container">
-      <h2>Blackjack</h2>
-      <p>{msg}</p>
 
-      {/* Player */}
-      <div className="board-row">
-        <h3>Bạn ({calcScore(player)})</h3>
-        <div className="hand">
-          {player.map((c, i) => <Card key={i} card={c} />)}
-        </div>
-      </div>
-
-      {/* Dealer */}
+      {/* Dealer trên */}
       <div className="board-row">
         <h3>Dealer ({end ? calcScore(dealer) : "?"})</h3>
         <div className="hand">
@@ -163,6 +160,22 @@ export default function Game({ gameContract }) {
         </div>
       </div>
 
+      {/* Kết quả + hiệu ứng */}
+      <div className="result-banner">
+        <h2 className={end ? "explosion-text" : ""}>{msg}</h2>
+      </div>
+
+      {/* Player dưới */}
+      <div className="board-row">
+        <h3>Bạn ({calcScore(player)})</h3>
+        <div className="hand">
+          {player.map((c, i) => (
+            <Card key={i} card={c} />
+          ))}
+        </div>
+      </div>
+
+      {/* Buttons */}
       <div className="controls">
         <button onClick={deal}>Deal</button>
         <button onClick={hit} disabled={end}>Hit</button>

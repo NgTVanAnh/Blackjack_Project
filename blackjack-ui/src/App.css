@@ -1,104 +1,245 @@
-/* =======================
-    BACKGROUND
-======================= */
+/* ====================================================
+    FONT + BACKGROUND CASINO LUXURY
+==================================================== */
+
+* {
+  font-family: "Playfair Display", serif !important;
+  box-sizing: border-box;
+}
+
 body {
   background: url("/casino-bg.jpg") no-repeat center center fixed;
   background-size: cover;
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
-}
-
-/* Nếu muốn dùng ảnh nền:
-body {
-  background: url("/bg-casino.jpg") no-repeat center center fixed;
-  background-size: cover;
-}
-*/
-
-/* =======================
-    TITLE
-======================= */
-h1 {
-  font-size: 48px;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-/* =======================
-    GAME UI
-======================= */
-.game-container {
-  text-align: center;
-  padding: 20px;
   color: white;
+}
+
+
+/* ====================================================
+    APP HEADER (màn hình 1 & 2)
+==================================================== */
+
+.app-container {
+  width: 100%;
+}
+
+/* Căn giữa theo chiều dọc khi chưa vào game */
+.center-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  gap: 20px;
+}
+
+/* Tiêu đề vàng kim */
+.casino-title {
+  font-family: "Cinzel", serif;
+  font-size: 72px;
+  font-weight: 900;
+
+  background: linear-gradient(90deg, #ffe17d, #ffd700, #fff3b0);
+  -webkit-background-clip: text;
+  color: transparent;
+
+  text-shadow: 
+    0 0 12px rgba(255,215,0,0.45),
+    0 0 25px rgba(255,215,0,0.4);
+
+  letter-spacing: 4px;
+  margin-bottom: 15px;
+}
+
+
+/* Button chính ở màn 1 & 2 */
+.main-btn, .mint-btn {
+  background: rgba(255,255,255,0.12);
+  color: white;
+  border: 1px solid #aaa;
+  padding: 14px 32px;
+  font-size: 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.main-btn:hover, .mint-btn:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.08);
+}
+
+
+/* ====================================================
+    GAME LAYOUT – FULL SCREEN TRUNG TÂM
+==================================================== */
+
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.game-container {
+  width: 100%;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+/* ====================================================
+    DEALER – PLAYER – STATUS
+==================================================== */
+
+.board-row {
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .msg {
-  font-size: 26px;       /* to hơn */
-  margin-top: 10px;
-  margin-bottom: 20px;
-  font-weight: 600;
+  font-size: 40px;
+  font-weight: 800;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: gold;
+  text-shadow: 0 0 10px rgba(0,0,0,0.7);
 }
 
-/* =======================
-    CARD LAYOUT
-======================= */
-.board-row {
-  margin-top: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* căn giữa */
-}
+
+/* ====================================================
+    CARDS
+==================================================== */
 
 .hand {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 18px;
+  gap: 15px;
+  margin-top: 10px;
 }
 
-/* =======================
-    CARD IMAGE
-======================= */
 .card-img {
-  width: 190px;       /* chỉnh lớn nhỏ tại đây */
+  width: 200px;
   height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-  transition: transform 0.2s ease;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+  transition: 0.15s;
 }
 
 .card-img:hover {
-  transform: scale(1.05);
+  transform: scale(1.15);
 }
 
-/* =======================
-    BUTTONS
-======================= */
+
+/* ====================================================
+    MID RESULT BANNER (HÒA / THẮNG / THUA)
+==================================================== */
+
+.result-banner h2 {
+  font-size: 48px;
+  font-family: "Cinzel Decorative", serif;
+  color: gold;
+
+  text-shadow: 
+    0 0 10px rgba(255,215,0,0.85),
+    0 0 20px rgba(255,215,0,0.7);
+
+  margin: 12px 0;
+}
+
+
+/* ====================================================
+    EXPLOSION EFFECT (Hiệu ứng “BÙNG NỔ” khi thắng/thua)
+==================================================== */
+
+.explosion-text {
+  font-size: 65px;
+  font-weight: 900;
+  color: #FFD700;
+
+  text-shadow:
+    0 0 20px #ff0,
+    0 0 40px #ff8,
+    0 0 60px #ff0;
+
+  animation: explode 0.8s ease-out forwards;
+}
+
+@keyframes explode {
+  0% { transform: scale(0.1); opacity: 0; }
+  55% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+
+/* ====================================================
+    CONTROL BUTTONS (Deal / Hit / Stand)
+==================================================== */
+
 .controls {
   display: flex;
-  justify-content: center; /* căn giữa */
-  gap: 20px;               /* khoảng cách nút */
-  margin-top: 25px;
+  justify-content: center;
+  margin-top: 30px;
+  gap: 45px;
 }
 
 .controls button {
-  background: #ffffff10;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid #ccc;
+  padding: 18px 40px;
+  font-size: 28px;
+  border-radius: 50px;
   color: white;
-  border: 1px solid #888;
-  padding: 12px 24px;
-  font-size: 20px;
-  border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
 
 .controls button:hover {
-  background: #57191930;
-  transform: scale(1.05);
+  transform: scale(1.1);
+  background: rgba(255, 70, 70, 0.25);
+}
+.game-wrapper {
+  width: 90vw;
+  height: 90vh;
+
+  margin: 0 auto;
+  margin-top: 20px;
+
+
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* căn giữa dọc */
+  align-items: center;      /* căn giữa ngang */
+
+  padding: 20px;
+}
+
+/* =============================
+    ANIMATION CHIA BÀI GIỐNG CASINO
+============================= */
+
+.card-fly {
+  position: relative;
+  animation: dealFly 0.4s ease-out forwards;
+  transform-origin: center;
+}
+
+@keyframes dealFly {
+  0% {
+    transform: translateY(-80px) scale(0.1) rotate(-25deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(10px) scale(1.1) rotate(3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
 }
