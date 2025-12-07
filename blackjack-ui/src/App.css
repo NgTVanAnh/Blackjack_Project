@@ -1,43 +1,104 @@
+/* =======================
+    BACKGROUND
+======================= */
+body {
+  background: url("/casino-bg.jpg") no-repeat center center fixed;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+/* Nếu muốn dùng ảnh nền:
+body {
+  background: url("/bg-casino.jpg") no-repeat center center fixed;
+  background-size: cover;
+}
+*/
+
+/* =======================
+    TITLE
+======================= */
+h1 {
+  font-size: 48px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* =======================
+    GAME UI
+======================= */
 .game-container {
   text-align: center;
   padding: 20px;
   color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .msg {
-  font-size: 20px;
-  margin-bottom: 15px;
+  font-size: 26px;       /* to hơn */
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-weight: 600;
 }
 
+/* =======================
+    CARD LAYOUT
+======================= */
 .board-row {
-  margin-top: 30px;
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* căn giữa */
 }
 
 .hand {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
+  align-items: center;
+  gap: 18px;
 }
 
-/* ---- Card image ---- */
+/* =======================
+    CARD IMAGE
+======================= */
 .card-img {
-  width: 70px;       /* nhỏ lại 50% */
+  width: 190px;       /* chỉnh lớn nhỏ tại đây */
   height: auto;
-  border-radius: 6px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
   transition: transform 0.2s ease;
 }
 
 .card-img:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
-/* ---- Buttons ---- */
+/* =======================
+    BUTTONS
+======================= */
+.controls {
+  display: flex;
+  justify-content: center; /* căn giữa */
+  gap: 20px;               /* khoảng cách nút */
+  margin-top: 25px;
+}
+
 .controls button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 18px;
+  background: #ffffff10;
+  color: white;
+  border: 1px solid #888;
+  padding: 12px 24px;
+  font-size: 20px;
   border-radius: 8px;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.controls button:hover {
+  background: #57191930;
+  transform: scale(1.05);
 }

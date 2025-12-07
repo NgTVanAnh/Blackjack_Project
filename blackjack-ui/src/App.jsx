@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import nftAbi from "./abis/BlackjackNFT.json";
 import gameAbi from "./abis/BlackjackGame.json";
 import Game from "./Game";
+import "./App.css";
 
 // === ĐỊA CHỈ CONTRACT (copy từ Hardhat) ===
 const NFT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
