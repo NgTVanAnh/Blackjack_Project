@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "hardhat": "^3.0.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
