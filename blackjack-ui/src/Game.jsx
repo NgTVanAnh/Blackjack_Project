@@ -1,36 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+/* ===== LOAD SOUNDS ===== */
+const bgMusic = new Audio("/sounds/bg.mp3");
+const sndClick = new Audio("/sounds/click.mp3");
+const sndFlip = new Audio("/sounds/flip.mp3");
+const sndExplode = new Audio("/sounds/explode.mp3");
+
+bgMusic.loop = true;
+bgMusic.volume = 0.25;
 
 /* =============================
-    TẠO ĐƯỜNG DẪN ẢNH LÁ BÀI
+    GET CARD IMAGE PATH
 ============================= */
 function getCardImage(card) {
   const suitMap = { "♣": "C", "♦": "D", "♥": "H", "♠": "S" };
   const folderMap = { C: "clubs", D: "diamonds", H: "hearts", S: "spades" };
 
-  const value = card.value;
-  const suit = suitMap[card.suit];
-  const folder = folderMap[suit];
-
-  return `/cards/${folder}/${value}${suit}.png`;
+  return `/cards/${folderMap[suitMap[card.suit]]}/${card.value}${suitMap[card.suit]}.png`;
 }
 
-/* Hiển thị lá bài */
+/* Card Component */
 function Card({ card, hidden }) {
-  if (hidden) {
-    return <img className="card-img" src="/cards/back.png" alt="Hidden" />;
-  }
+  const [fly, setFly] = useState(false);
+
+  useEffect(() => {
+    setFly(false);
+    const t = setTimeout(() => setFly(true), 10);
+    return () => clearTimeout(t);
+  }, [card]);
 
   return (
     <img
-      className="card-img"
-      src={getCardImage(card)}
-      alt={card.value + card.suit}
+      className={`card-img ${fly ? "card-fly" : ""}`}
+      src={hidden ? "/cards/back.png" : getCardImage(card)}
+      alt="card"
+      draggable="false"
     />
   );
 }
 
+
+
 /* =============================
-       TẠO BỘ BÀI & TÍNH ĐIỂM
+    CREATE DECK + SHUFFLE
 ============================= */
 function createDeck() {
   const suits = ["♠", "♥", "♦", "♣"];
@@ -43,32 +55,28 @@ function createDeck() {
 function shuffle(deck) {
   let d = [...deck];
   for (let i = d.length - 1; i > 0; i--) {
-    const j = Math.random() * (i + 1) | 0;
+    const j = Math.floor(Math.random() * (i + 1));
     [d[i], d[j]] = [d[j], d[i]];
   }
   return d;
 }
 
+/* =============================
+        CALC SCORE
+============================= */
 function calcScore(hand) {
-  let total = 0;
-  let aces = 0;
-
+  let total = 0, aces = 0;
   for (let c of hand) {
-    if (c.value === "A") { total += 1; aces++; }
+    if (c.value === "A") total += 1, aces++;
     else if ("JQK".includes(c.value)) total += 10;
     else total += parseInt(c.value);
   }
-
-  while (aces > 0 && total + 10 <= 21) {
-    total += 10;
-    aces--;
-  }
-
+  while (aces > 0 && total + 10 <= 21) total += 10, aces--;
   return total;
 }
 
 /* =============================
-            GAME UI
+        GAME COMPONENT
 ============================= */
 export default function Game({ gameContract }) {
   const [deck, setDeck] = useState([]);
@@ -76,81 +84,103 @@ export default function Game({ gameContract }) {
   const [dealer, setDealer] = useState([]);
   const [msg, setMsg] = useState("Nhấn Deal để bắt đầu!");
   const [end, setEnd] = useState(false);
+  const [explosion, setExplosion] = useState(false);
 
-  /* ===== DEAL ===== */
-  const deal = () => {
-    const d = shuffle(createDeck());
-    setPlayer([d.pop(), d.pop()]);
-    setDealer([d.pop(), d.pop()]);
-    setDeck(d);
+  useEffect(() => {
+    sndClick.volume = 0.5;
+    sndFlip.volume = 0.5;
+    sndExplode.volume = 0.9;
+  }, []);
 
-    setMsg("ĐANG CHƠI...");
-    setEnd(false);
+  /* ========= DEAL ========= */
+const deal = () => {
+  bgMusic.play().catch(() => {});
+  
+  sndClick.play();
+
+  const d = shuffle(createDeck());
+  let newDeck = [...d];
+
+  setPlayer([]);
+  setDealer([]);
+  setExplosion(false);
+  setEnd(false);
+  setMsg("ĐANG CHƠI...");
+
+  const giveCard = (setter, delay) => {
+    setTimeout(() => {
+      sndFlip.currentTime = 0;
+      sndFlip.play();
+
+      const card = newDeck.pop();
+      setter(prev => [...prev, { ...card, animated: true }]);
+    }, delay);
   };
 
-  /* ===== HIT ===== */
-  const hit = () => {
-    if (end) return;
+  // Chia như thật: Player → Dealer → Player → Dealer
+  giveCard(setPlayer, 200);
+  giveCard(setDealer, 550);
+  giveCard(setPlayer, 900);
+  giveCard(setDealer, 1250);
 
-    const d = [...deck];
-    const p = [...player, d.pop()];
+  setDeck(newDeck);
+};
 
-    setDeck(d);
-    setPlayer(p);
 
-    if (calcScore(p) > 21) {
-      setMsg("BẠN BUST! THUA.");
-      finish("LOSE", calcScore(p), calcScore(dealer));
-    }
-  };
 
-  /* ===== STAND ===== */
+  /* ========= HIT ========= */
+const hit = () => {
+  if (end) return;
+
+  sndClick.play();
+  sndFlip.play();
+
+  const d = [...deck];
+  const newCard = { ...d.pop(), animated: true };
+
+  setDeck(d);
+  setPlayer(prev => [...prev, newCard]);
+
+  if (calcScore([...player, newCard]) > 21) {
+    finish("💀 BẠN BUST!");
+  }
+};
+
+  /* ========= STAND ========= */
   const stand = () => {
     if (end) return;
 
-    const d = [...deck];
+    sndClick.play();
+
+    let d = [...deck];
     let dl = [...dealer];
 
-    while (calcScore(dl) < 17) dl.push(d.pop());
+    while (calcScore(dl) < 17) {
+      sndFlip.play();
+      dl.push(d.pop());
+    }
+
     setDealer(dl);
 
-    const pScore = calcScore(player);
-    const dScore = calcScore(dl);
+    const p = calcScore(player);
+    const ds = calcScore(dl);
 
-    const result =
-      pScore > dScore || dScore > 21 ? "WIN" :
-      pScore < dScore ? "LOSE" : "DRAW";
-
-    setMsg(
-      result === "WIN" ? "BẠN THẮNG!" :
-      result === "LOSE" ? "BẠN THUA!" :
-      "HÒA!"
-    );
-
-    finish(result, pScore, dScore);
+    if (p > ds || ds > 21) finish("🎉 BẠN THẮNG!");
+    else if (p < ds) finish("💀 BẠN THUA!");
+    else finish("🤝 HÒA!");
   };
 
-  /* ===== GHI ONCHAIN ===== */
-  const finish = async (result, pScore, dScore) => {
+  /* ========= FINISH ========= */
+  const finish = (text) => {
+    sndExplode.play();
+    setMsg(text);
+    setExplosion(true);
     setEnd(true);
-
-    const enumRes = result === "WIN" ? 2 : result === "DRAW" ? 1 : 0;
-
-    try {
-      const tx = await gameContract.recordResult(pScore, dScore, enumRes);
-      await tx.wait();
-    } catch (err) {
-      console.error(err);
-    }
   };
 
-  /* ==============================
-            UI GIAO DIỆN
-  ============================== */
   return (
-    <div className="game-container">
+    <div className="game-wrapper">
 
-      {/* Dealer trên */}
       <div className="board-row">
         <h3>Dealer ({end ? calcScore(dealer) : "?"})</h3>
         <div className="hand">
@@ -160,12 +190,12 @@ export default function Game({ gameContract }) {
         </div>
       </div>
 
-      {/* Kết quả + hiệu ứng */}
-      <div className="result-banner">
-        <h2 className={end ? "explosion-text" : ""}>{msg}</h2>
-      </div>
+      {explosion ? (
+        <h1 className="explosion-text">{msg}</h1>
+      ) : (
+        <div className="result-banner"><h2>{msg}</h2></div>
+      )}
 
-      {/* Player dưới */}
       <div className="board-row">
         <h3>Bạn ({calcScore(player)})</h3>
         <div className="hand">
@@ -175,12 +205,12 @@ export default function Game({ gameContract }) {
         </div>
       </div>
 
-      {/* Buttons */}
       <div className="controls">
         <button onClick={deal}>Deal</button>
         <button onClick={hit} disabled={end}>Hit</button>
         <button onClick={stand} disabled={end}>Stand</button>
       </div>
+
     </div>
   );
 }
